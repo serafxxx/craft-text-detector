@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.init as init
 from torchvision import models
-# from torchvision.models.vgg import model_urls
+from torchvision.models import VGG16_BN_Weights  # Import the weights class
 
 __all__ = [
     "VGG",
@@ -18,17 +18,6 @@ __all__ = [
     "vgg19",
 ]
 
-
-model_urls = {
-    "vgg11": "https://download.pytorch.org/models/vgg11-8a719046.pth",
-    "vgg13": "https://download.pytorch.org/models/vgg13-19584684.pth",
-    "vgg16": "https://download.pytorch.org/models/vgg16-397923af.pth",
-    "vgg19": "https://download.pytorch.org/models/vgg19-dcbb9e9d.pth",
-    "vgg11_bn": "https://download.pytorch.org/models/vgg11_bn-6002323d.pth",
-    "vgg13_bn": "https://download.pytorch.org/models/vgg13_bn-abd245e5.pth",
-    "vgg16_bn": "https://download.pytorch.org/models/vgg16_bn-6c64b313.pth",
-    "vgg19_bn": "https://download.pytorch.org/models/vgg19_bn-c79401a0.pth",
-}
 
 def init_weights(modules):
     for m in modules:
@@ -47,8 +36,13 @@ def init_weights(modules):
 class vgg16_bn(torch.nn.Module):
     def __init__(self, pretrained=True, freeze=True):
         super(vgg16_bn, self).__init__()
-        model_urls["vgg16_bn"] = model_urls["vgg16_bn"].replace("https://", "http://")
-        vgg_pretrained_features = models.vgg16_bn(pretrained=pretrained).features
+        # No need to modify model_urls, torchvision handles this internally
+
+        # Update to use 'weights' instead of 'pretrained'
+        weights = VGG16_BN_Weights.DEFAULT if pretrained else None
+        vgg_model = models.vgg16_bn(weights=weights)
+        vgg_pretrained_features = vgg_model.features
+
         self.slice1 = torch.nn.Sequential()
         self.slice2 = torch.nn.Sequential()
         self.slice3 = torch.nn.Sequential()
@@ -76,10 +70,10 @@ class vgg16_bn(torch.nn.Module):
             init_weights(self.slice3.modules())
             init_weights(self.slice4.modules())
 
-        init_weights(self.slice5.modules())  # no pretrained model for fc6 and fc7
+        init_weights(self.slice5.modules())  # No pretrained model for fc6 and fc7
 
         if freeze:
-            for param in self.slice1.parameters():  # only first conv
+            for param in self.slice1.parameters():  # Only freeze the first conv layer
                 param.requires_grad = False
 
     def forward(self, X):

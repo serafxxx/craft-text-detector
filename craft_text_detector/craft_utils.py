@@ -65,14 +65,14 @@ def load_craftnet_model(
 
     # arange device
     if cuda:
-        craft_net.load_state_dict(copyStateDict(torch_utils.load(weight_path)))
+        craft_net.load_state_dict(copyStateDict(torch_utils.load(weight_path, weights_only=True)))
 
         craft_net = craft_net.cuda()
         craft_net = torch_utils.DataParallel(craft_net)
         torch_utils.cudnn_benchmark = False
     else:
         craft_net.load_state_dict(
-            copyStateDict(torch_utils.load(weight_path, map_location="cpu"))
+            copyStateDict(torch_utils.load(weight_path, map_location="cpu", weights_only=True))
         )
     craft_net.eval()
     return craft_net
@@ -109,14 +109,14 @@ def load_refinenet_model(
 
     # arange device
     if cuda:
-        refine_net.load_state_dict(copyStateDict(torch_utils.load(weight_path)))
+        refine_net.load_state_dict(copyStateDict(torch_utils.load(weight_path, weights_only=True)))
 
         refine_net = refine_net.cuda()
         refine_net = torch_utils.DataParallel(refine_net)
         torch_utils.cudnn_benchmark = False
     else:
         refine_net.load_state_dict(
-            copyStateDict(torch_utils.load(weight_path, map_location="cpu"))
+            copyStateDict(torch_utils.load(weight_path, map_location="cpu", weights_only=True))
         )
     refine_net.eval()
     return refine_net
